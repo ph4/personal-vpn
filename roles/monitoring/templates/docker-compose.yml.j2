@@ -1,0 +1,135 @@
+services:
+  prometheus:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    image: prom/prometheus:latest
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./blackbox.yml:/etc/prometheus/blackbox.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+
+  node-exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node-exporter
+    network_mode: host
+    pid: host
+    restart: unless-stopped
+    command:
+      - '--path.rootfs=/host'
+      - '--collector.disable-defaults'
+      - '--collector.netdev'
+      - '--collector.cpu'
+      - '--collector.meminfo'
+      - '--collector.filesystem'
+    volumes:
+      - '/:/host:ro,rslave'
+    ports:
+      - "127.0.0.1:9100:9100"
+
+  wiregauard-exporter:
+    container_name: wireguard-exporter
+    image: ph40/prometheus_wireguard_exporter:latest
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+    restart: unless-stopped
+    environment:
+      - PROMETHEUS_WIREGUARD_EXPORTER_AWG_ENABLED=true
+      - EXPORT_LATEST_HANDSHAKE_DELAY=true
+
+  blackbox:
+    image: prom/blackbox-exporter:latest
+    container_name: blackbox
+    restart: unless-stopped
+    volumes:
+      - ./blackbox.yml:/etc/blackbox_exporter/config.yml:ro
+    network_mode: host
+    # ports: - "127.0.0.1:9115:9115"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      - GF_SERVER_ROOT_URL=%(protocol)s://%(domain)s/grafana/
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      - GF_SERVER_DOMAIN={{ domain }}
+      - GF_SECURITY_ADMIN_USER={{ grafana_admin_user }}
+      - GF_SECURITY_ADMIN_PASSWORD={{ grafana_admin_password }}
+    volumes:
+      - grafana_data:/var/lib/grafana
+
+  postgres:
+    image: postgres:16
+    container_name: zabbix-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: {{ zabbix_db_password }}
+      POSTGRES_DB: zabbix
+    volumes:
+      - zabbix_db_data:/var/lib/postgresql/data
+
+  zabbix-server:
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    image: zabbix/zabbix-server-pgsql:latest
+    container_name: zabbix-server
+    restart: unless-stopped
+    environment:
+      DB_SERVER_HOST: postgres
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: {{ zabbix_db_password }}
+      POSTGRES_DB: zabbix
+    depends_on:
+      - postgres
+    ports:
+      - "127.0.0.1:10051:10051"
+    volumes:
+      - zabbix_alertscripts:/usr/lib/zabbix/alertscripts
+      - zabbix_external:/usr/lib/zabbix/externalscripts
+
+  zabbix-web:
+    image: zabbix/zabbix-web-nginx-pgsql:latest
+    container_name: zabbix-web
+    restart: unless-stopped
+    environment:
+      DB_SERVER_HOST: postgres
+      POSTGRES_USER: zabbix
+      POSTGRES_PASSWORD: {{ zabbix_db_password }}
+      POSTGRES_DB: zabbix
+      ZBX_SERVER_HOST: zabbix-server
+      PHP_TZ: Europe/Moscow
+    depends_on:
+      - zabbix-server
+    ports:
+      - "127.0.0.1:8087:8080"
+
+  zabbix-agent:
+    profiles:
+      - donotstart
+    image: zabbix/zabbix-agent:latest
+    container_name: zabbix-agent
+    restart: unless-stopped
+    environment:
+      ZBX_SERVER_HOST: zabbix-server
+      ZBX_HOSTNAME: monitored-host
+    ports:
+      - "10050:10050"
+    depends_on:
+      - zabbix-server
+
+
+volumes:
+  prometheus_data:
+  zabbix_db_data:
+  zabbix_alertscripts:
+  zabbix_external:
+  grafana_data:

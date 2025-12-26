@@ -1,0 +1,31 @@
+- hosts: all:!external_endpoints
+  gather_facts: false
+  vars:
+    skip_amneziawg: true
+  pre_tasks:
+    - name: Install wireguard
+      package:
+        name: wireguard-tools
+        state: present
+      when: amnezia is not defined
+
+    - name: Install amnezia
+      include_role:
+        name: amneziawg
+      when: amnezia is defined and not skip_amneziawg
+
+    - name: Generate keys
+      include_role:
+        name: wg-keys
+      when: wg_keys is not defined
+
+- hosts: endpoint
+  gather_facts: false
+  roles:
+    - wg-endpoint
+
+- hosts: main
+  gather_facts: false
+  roles:
+    - monitoring
+    - wg-main

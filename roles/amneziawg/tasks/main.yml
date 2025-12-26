@@ -1,0 +1,72 @@
+---
+- name: Set variables
+  set_fact:
+    tools_repo: https://github.com/amnezia-vpn/amneziawg-tools.git
+    tools_path: /opt/amneziawg-tools
+    module_repo: https://github.com/ph4/amneziawg-linux-kernel-module.git
+    module_path: /opt/amneziawg-linux-kernel-module
+    module_name: amneziawg
+    module_version: 1.0.0
+
+- name: Ensure development tools are installed
+  dnf:
+    name:
+      - git
+      - kernel-devel
+      - kernel-headers
+      - make
+      - gcc
+      - epel-release
+    state: present
+
+- name: Ensure dkms is installed
+  dnf:
+    name: dkms
+    state: present
+
+- name: Fetch amneziawg-kernel-module
+  git:
+    repo: "{{ module_repo }}"
+    dest: "{{ module_path }}"
+    version: master
+    update: true
+  register: git
+
+- name: Build module with make
+  command: make dkms-install
+  args:
+    chdir: "{{ module_path }}/src"
+  when: git.after != git.before
+  register: make
+  changed_when: make.rc == 0
+
+- name: Build DKMS module
+  command: >
+    dkms build -m {{ module_name }} -v {{ module_version }} --force
+  when: make.changed
+  register: dkms_build
+  changed_when: dkms_build.rc == 0
+
+
+- name: Install DKMS module
+  command: >
+    dkms install -m {{ module_name }} -v {{ module_version }} --force
+  when: dkms_build.changed
+  register: dkms_install
+  changed_when: dkms_install.rc == 0
+
+- name: Fetch amneziawg-tools
+  git:
+    repo: "{{ tools_repo }}"
+    dest: "{{ tools_path }}"
+    version: master
+    update: true
+  register: git_tools
+
+- name: Make install amneziawg-tools
+  command: make install
+  args:
+    chdir: "{{ tools_path }}/src"
+  when: git_tools.after != git_tools.before
+  register: make_tools
+  changed_when: make_tools.rc == 0

@@ -1,0 +1,81 @@
+---
+- name: Set variables
+  set_fact:
+    nginx_dir: "{{ '/etc/nginx/default.d' }}"
+    compose_dir: "{{ '/etc/docker/containers/monitoring' }}"
+    external_endpoints: "{{ groups['external_endpoints'] | map('extract', hostvars) | list }}"
+    host_endpoints: "{{ groups['endpoint'] | map('extract', hostvars) | list }}"
+
+- name: Deploy zabbix nginx
+  vars:
+    host: "localhost"
+    port_: "8087"
+    location: "zabbix"
+  template:
+    src: nginx_default.conf.j2
+    dest: "{{ nginx_dir }}/{{ location }}.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Deploy grafana nginx
+  vars:
+    host: "localhost"
+    port_: "3000"
+    location: "grafana"
+  template:
+    src: nginx_grafana.conf.j2
+    dest: "{{ nginx_dir }}/{{ location }}.conf"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Create compose directory
+  file:
+    path: "{{ compose_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy blackbox
+  vars:
+    endpoints: "{{ external_endpoints + host_endpoints }}"
+  template:
+    src: blackbox.yml.j2
+    dest: "{{ compose_dir }}/blackbox.yml"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Docker-compose restart
+
+- name: Deploy prometheus
+  vars:
+    endpoints: "{{ external_endpoints + host_endpoints }}"
+  template:
+    src: prometheus.yml.j2
+    dest: "{{ compose_dir }}/prometheus.yml"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Docker-compose restart
+
+- name: Deploy docker-compose
+  vars:
+    endpoints: "{{ external_endpoints + host_endpoints }}"
+    domain: "{{ hostvars[inventory_hostname].ansible_host }}"
+  template:
+    src: docker-compose.yml.j2
+    dest: "{{ compose_dir }}/docker-compose.yml"
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Docker-compose up
+  community.docker.docker_compose_v2:
+    project_src: "{{ compose_dir }}"
+    #pull: always
+    state: present
+  register: docker_compose

@@ -1,0 +1,17 @@
+modules:
+{% for ep in endpoints %}
+  icmp4_{{ ep.inventory_hostname }}:
+    prober: icmp
+    icmp:
+      preferred_ip_protocol: "ip4"
+      source_ip_address: {{ ep.peer.address4.split('/')[0] }}
+{% if ep.peer.address6 is defined %}
+  icmp6_{{ ep.inventory_hostname }}:
+    prober: icmp
+    icmp:
+      preferred_ip_protocol: "ip6"
+      source_ip_address: {{ ep.peer.address6.split('/')[0] }}
+{% endif %}
+{% endfor %}
+
+

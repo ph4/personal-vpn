@@ -1,0 +1,67 @@
+---
+- name: Stop execution if keys already exist
+  delegate_to: localhost
+  stat:
+    path: "host_vars/{{ inventory_hostname }}/wireguard_keys.yml"
+  register: keys
+  failed_when: keys.stat.exists
+
+- name: Check if wg exists
+  command: "which wg"
+  register: wg_exists
+  changed_when: false
+
+- name: Check if awg exists
+  command: "which awg"
+  register: awg_exists
+  changed_when: false
+
+- name: Stop execution if neither wg nor awg exists
+  fail:
+    msg: "Neither wg nor awg found"
+  when: wg_exists.rc != 0 and awg_exists.rc != 0
+
+- name: Set executable name
+  set_fact:
+    wg: "{{ 'awg' if awg_exists.rc == 0 else 'wg' }}"
+
+- name: Generate private key
+  command: "{{ wg }} genkey"
+  register: private_key_cmd
+  changed_when: false
+
+- name: Generate server public key
+  shell: |
+    set -o pipefail
+    echo {{ private_key_cmd.stdout }} | {{ wg }} pubkey
+  register: public_key_cmd
+  changed_when: false
+
+- name: Generate pre-shared key
+  command: "{{ wg }} genpsk"
+  register: preshared_key_cmd
+  changed_when: false
+
+- name: Create directory for host_vars
+  delegate_to: localhost
+  become: false
+  file:
+    path: "{{ playbook_dir }}/host_vars/{{ inventory_hostname }}"
+    state: directory
+    mode: "0755"
+
+- name: Save WireGuard keys
+  delegate_to: localhost
+  become: false
+  copy:
+    dest: "{{ playbook_dir }}/host_vars/{{ inventory_hostname }}/wireguard_keys.yml"
+    content: |
+      wg_keys:
+        private: "{{ private_key_cmd.stdout }}"
+        public: "{{ public_key_cmd.stdout }}"
+        preshared: "{{ preshared_key_cmd.stdout }}"
+    mode: "0600"
+
+- name: Include WireGuard keys
+  include_vars:
+    file: "{{ playbook_dir }}/host_vars/{{ inventory_hostname }}/wireguard_keys.yml"

@@ -1,0 +1,18 @@
+[Interface]
+PrivateKey = {{ wg_keys.private }}
+Address = {{ address4 }}, {{ address6 }}
+ListenPort = {{ listen_port }}
+MTU = {{ mtu }}
+{% if amnezia is defined %}
+{{ amnezia.full_config }}
+{% endif %}
+
+PreUp =
+PostUp = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; ip6tables -A FORWARD -i %i -j ACCEPT; ip6tables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -s {{ peer.address4 }} -o eth0 -j MASQUERADE; ip6tables -t nat -A POSTROUTING -s {{ peer.address6 }} -o eth0 -j MASQUERADE
+PreDown =
+PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; ip6tables -D FORWARD -i %i -j ACCEPT; ip6tables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -s {{ peer.address4 }} -o eth0 -j MASQUERADE; ip6tables -t nat -D POSTROUTING -s {{ peer.address6 }} -o eth0 -j MASQUERADE
+
+[Peer]
+PublicKey = {{ main.wg_keys.public }}
+PresharedKey = {{ wg_keys.preshared }}
+AllowedIPs = {{ peer.address4 }}, {{ peer.address6 }}, {{ main.local_net4 }}, {{ main.local_net6 }}

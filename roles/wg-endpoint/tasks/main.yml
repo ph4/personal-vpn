@@ -1,0 +1,23 @@
+---
+- name: Set wg config directory
+  set_fact:
+    wg_config_dir: "{{ '/etc/amnezia/amneziawg' if amnezia is defined else '/etc/wireguard' }}"
+    prefix: "{{ 'awg' if amnezia is defined else 'wg' }}"
+
+- name: Deploy config
+  template:
+    src: ep.conf.j2
+    dest: "{{ wg_config_dir }}/{{ prefix }}-{{ inventory_hostname }}.conf"
+    owner: root
+    group: root
+    mode: "0600"
+  vars:
+    main: "{{ hostvars['main'] }}"
+  register: wg_endpoint
+
+- name: Enable service
+  service:
+    name: "{{ prefix }}-quick@{{ prefix }}-{{ inventory_hostname }}"
+    enabled: true
+    state: restarted
+  when: wg_endpoint.changed

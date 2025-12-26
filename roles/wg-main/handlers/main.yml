@@ -1,0 +1,6 @@
+- name: Restart interfaces
+  loop: "{{ interfaces.results | selectattr('changed', 'equalto', true) | map(attribute='ep.inventory_hostname') }}"
+  service:
+    name: "{{ prefix }}-quick@{{ prefix }}-{{ item }}"
+    enabled: true
+    state: restarted

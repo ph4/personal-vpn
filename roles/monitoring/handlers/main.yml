@@ -1,0 +1,12 @@
+---
+- name: Reload nginx
+  service:
+    name: nginx
+    state: reloaded
+
+- name: Docker-compose restart
+  community.docker.docker_compose_v2:
+    project_src: "{{ compose_dir }}"
+    pull: always
+    state: restarted
+  register: docker_compose
