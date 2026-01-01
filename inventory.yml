@@ -1,23 +1,15 @@
 external_endpoints:
   hosts:
-    # lucky_de:
-    #   host: 147.45.178.3
-    #   listen_port: 51722
-    #   peer:
-    #     address4: 10.66.66.88/32
-    #     # address6: fd42:42:42::88/128
-    #     mtu: 1420
     lucky_us:
-      host: 92.118.112.107
+      host: 92.118.112.220
       listen_port: 51722
       peer:
-        address4: 10.66.66.59/32
-        address6: fd42:42:42::59/128
+        address4: 10.66.66.62/32
+        address6: fd42:42:42::62/128
         mtu: 1420
 main:
   vars:
     ansible_user: root
-    external_endpoints:
   hosts:
     main:
       ansible_host: 31.130.144.133
