@@ -1,12 +1,6 @@
 external_endpoints:
   hosts:
-    lucky_us:
-      host: 92.118.112.220
-      listen_port: 51722
-      peer:
-        address4: 10.66.66.62/32
-        address6: fd42:42:42::62/128
-        mtu: 1420
+    ext:
 main:
   vars:
     ansible_user: root

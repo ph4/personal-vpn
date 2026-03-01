@@ -1,4 +1,4 @@
-- hosts: all:!external_endpoints
+- hosts: none:!external_endpoints
   gather_facts: false
   vars:
     skip_amneziawg: true
