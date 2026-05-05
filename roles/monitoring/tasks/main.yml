@@ -6,19 +6,6 @@
     external_endpoints: "{{ groups['external_endpoints'] | map('extract', hostvars) | list }}"
     host_endpoints: "{{ groups['endpoint'] | map('extract', hostvars) | list }}"
 
-- name: Deploy zabbix nginx
-  vars:
-    host: "localhost"
-    port_: "8087"
-    location: "zabbix"
-  template:
-    src: nginx_default.conf.j2
-    dest: "{{ nginx_dir }}/{{ location }}.conf"
-    owner: root
-    group: root
-    mode: "0644"
-  notify: Reload nginx
-
 - name: Deploy grafana nginx
   vars:
     host: "localhost"
@@ -76,6 +63,6 @@
 - name: Docker-compose up
   community.docker.docker_compose_v2:
     project_src: "{{ compose_dir }}"
-    #pull: always
+    pull: always
     state: present
   register: docker_compose
