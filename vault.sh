@@ -68,7 +68,7 @@ run() {
 
 if [[ $# -eq 0 || $1 == "encrypt" ]]; then
     run encrypt
-elif [[ $1 == "decrypt" && -n "$2" ]]; then
+elif [[ $1 == "decrypt" && -n "${2:-}" ]]; then
     decrypt "$2"
 elif [[ $1 == "decrypt" ]]; then
     run decrypt
