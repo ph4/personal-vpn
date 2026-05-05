@@ -1,24 +1,18 @@
 ---
-- name: Set variables
-  set_fact:
-    wg_config_dir: "{{ '/etc/amnezia/amneziawg' }}"
-    prefix: "awg"
-    external_endpoints: "{{ groups['external_endpoints'] | map('extract', hostvars) | list }}"
-    host_endpoints: "{{ groups['endpoint'] | map('extract', hostvars) | list }}"
-
 - name: Deploy interfaces
-  vars:
-    table_id: "{{ range(1000, 65535) | random(seed=ep.host~':'~ep.listen_port) }}"
-    private_key: "{{ ep.wg_keys.get('private_ext') or wg_keys.private }}"
-  loop: "{{ external_endpoints + host_endpoints }}"
-  loop_control:
-    loop_var: ep
-    label: "{{ ep.inventory_hostname }}"
-  register: interfaces
-  notify: Restart interfaces
   template:
     src: main.conf.j2
     dest: "{{ wg_config_dir }}/{{ prefix }}-{{ ep.inventory_hostname }}.conf"
     owner: root
     group: root
     mode: "0600"
+  vars:
+    table_id: "{{ range(1000, 65535) | random(seed=ep.host~':'~ep.listen_port) }}"
+    private_key: "{{ ep.wg_keys.private_key | default(wg_keys.private) }}"
+  loop: "{{ external_endpoints + host_endpoints }}"
+  loop_control:
+    loop_var: ep
+    label: "{{ ep.inventory_hostname }}"
+  register: interfaces
+  notify:
+    - Restart changed interfaces

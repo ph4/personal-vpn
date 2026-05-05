@@ -1,15 +1,15 @@
 [Interface]
 PrivateKey = {{ private_key }}
-Address = {{ ep.peer.address4 }}{{ ', ' + ep.peer.address6 if ep.peer.address6 is defined else '' }}
+Address = {{ ep.peer.address4 }}{{ ', ' + ep.peer.address6 if ep.peer.address6 else '' }}
 MTU = {{ ep.peer.mtu }}
-{% if ep.amnezia is defined %}
+{% if ep.amnezia and ep.amnezia.full_config %}
 {{ ep.amnezia.full_config }}
 {% endif %}
 
 Table = off
 
 PostUp = ip route add 0.0.0.0/0 dev %i table {{ table_id }}; ip rule add from {{ ep.peer.address4 }} table {{ table_id }};
-{% if ep.peer.address6 is defined %}
+{% if ep.peer.address6 %}
 PostUp = ip -6 route add ::/0 dev %i table {{ table_id }}; ip -6 rule add from {{ ep.peer.address6 }} table {{ table_id }};
 {% endif %}
 
@@ -18,6 +18,4 @@ Endpoint = {{ ep.host }}:{{ ep.listen_port }}
 PublicKey = {{ ep.wg_keys.public }}
 PresharedKey = {{ ep.wg_keys.preshared }}
 PersistentKeepalive = 25
-AllowedIPs = 0.0.0.0/0{{ ', ::/0' if ep.peer.address6 is defined else '' }}
-
-
+AllowedIPs = 0.0.0.0/0{{ ', ::/0' if ep.peer.address6 else '' }}

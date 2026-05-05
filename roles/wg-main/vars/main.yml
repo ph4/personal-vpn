@@ -1,0 +1,4 @@
+wg_config_dir: "{{ '/etc/amnezia/amneziawg' }}"
+prefix: "awg"
+external_endpoints: "{{ groups['external_endpoints'] | map('extract', hostvars) | list }}"
+host_endpoints: "{{ groups['endpoint'] | map('extract', hostvars) | list }}"

@@ -1,6 +1,17 @@
-- name: Restart interfaces
-  loop: "{{ interfaces.results | selectattr('changed', 'equalto', true) | map(attribute='ep.inventory_hostname') }}"
-  service:
+- name: Restart changed interfaces
+  listen: Restart changed interfaces
+  vars:
+    changed_interfaces: >
+      {{
+        interfaces.results
+        | selectattr('changed', 'equalto', true)
+        | list
+        | map(attribute='ep.inventory_hostname')
+        | unique
+      }}
+  systemd:
     name: "{{ prefix }}-quick@{{ prefix }}-{{ item }}"
     enabled: true
     state: restarted
+  loop: "{{ changed_interfaces }}"
+  when: interfaces.changed
