@@ -1,13 +1,17 @@
 external_endpoints:
   hosts:
+
 main:
   vars:
     ansible_user: root
+    local_net4: 10.42.0.0/16
+    local_net6: fd:cafe:42::/96
   hosts:
-    main:
-      ansible_host: 31.130.144.133
-      local_net4: 10.42.0.0/16
-      local_net6: fd:cafe:42::/96
+    #main:
+    #  ansible_host: 31.130.144.133
+    secondary:
+      ansible_host: 153.80.184.189
+
 endpoint:
   vars:
     ansible_user: root

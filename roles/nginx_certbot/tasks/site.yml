@@ -1,0 +1,27 @@
+---
+- name: Check if cert exists for {{ site_domain }}
+  ansible.builtin.stat:
+    path: "/etc/letsencrypt/live/{{ site_domain }}/fullchain.pem"
+  register: cert_stat
+  become: true
+
+- name: Deploy Nginx config for {{ site_domain }}
+  ansible.builtin.template:
+    src: nginx-site.conf.j2
+    dest: "/etc/nginx/conf.d/{{ site_domain }}.conf"
+    mode: '0644'
+  become: true
+  notify: reload nginx
+
+- name: Obtain certificate for {{ site_domain }}
+  ansible.builtin.command: >
+    certbot certonly --webroot
+    -w /var/www/letsencrypt
+    -d {{ site_domain }}{% if site_www | default(false) %} -d www.{{ site_domain }}{% endif %}
+    --email {{ certbot_email }}
+    --agree-tos
+    --non-interactive
+  become: true
+  when: not cert_stat.stat.exists
+  changed_when: true
+  notify: reload nginx

@@ -1,0 +1,59 @@
+---
+- name: Install dependencies
+  ansible.builtin.dnf:
+    name:
+      - certbot
+      - python3-certbot-nginx
+      - nginx
+    state: present
+  become: true
+
+- name: Ensure Nginx is started and enabled
+  ansible.builtin.systemd:
+    name: nginx
+    state: started
+    enabled: true
+  become: true
+
+- name: Create LE directory
+  ansible.builtin.file:
+    path: /var/www/letsencrypt
+    state: directory
+    owner: nginx
+    group: nginx
+    mode: '0755'
+  become: true
+
+- name: Ensure renewal hooks directory exists
+  ansible.builtin.file:
+    path: /etc/letsencrypt/renewal-hooks/deploy
+    state: directory
+    mode: '0755'
+  become: true
+
+- name: Deploy nginx reload hook for certbot
+  ansible.builtin.copy:
+    dest: /etc/letsencrypt/renewal-hooks/deploy/nginx-reload
+    content: |
+      #!/bin/sh
+      systemctl reload nginx
+    mode: '0755'
+  become: true
+
+- name: Check if certbot systemd timer exists
+  ansible.builtin.stat:
+    path: /usr/lib/systemd/system/certbot-renew.timer
+  register: certbot_timer_check
+  become: true
+
+- name: Setup auto-renewal cron
+  ansible.builtin.cron:
+    name: "Certbot renewal"
+    hour: "{{ certbot_renew_hour }}"
+    minute: "{{ certbot_renew_minute }}"
+    job: "certbot renew --quiet"
+    user: root
+  become: true
+  when:
+    - certbot_auto_renew
+    - not certbot_timer_check.stat.exists

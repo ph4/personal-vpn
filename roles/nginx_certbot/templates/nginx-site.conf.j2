@@ -1,0 +1,54 @@
+{% set server_names = [site_domain] %}
+{% if site_www | default(false) %}
+{% set server_names = server_names + ['www.' + site_domain] %}
+{% endif %}
+
+{% set proxies = site_trusted_proxies | default(['127.0.0.1']) %}
+
+server {
+    listen 80;
+    server_name {{ server_names | join(' ') }};
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/letsencrypt;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name {{ server_names | join(' ') }};
+
+    ssl_certificate /etc/letsencrypt/live/{{ site_domain }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ site_domain }}/privkey.pem;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    add_header Strict-Transport-Security "max-age=31536000" always;
+
+{% for ip in proxies %}
+    set_real_ip_from {{ ip }};
+{% endfor %}
+    real_ip_header X-Forwarded-For;
+
+{% if site_backend | default('') %}
+    location / {
+        proxy_pass {{ site_backend }};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+{% else %}
+    root {{ site_root | default('/var/www/html') }};
+    index index.html index.htm;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+{% endif %}
+}

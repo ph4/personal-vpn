@@ -1,13 +1,14 @@
 - hosts: none:!external_endpoints
   gather_facts: false
   vars:
+    skip_wg: true
     skip_amneziawg: true
   pre_tasks:
     - name: Install wireguard
       package:
         name: wireguard-tools
         state: present
-      when: amnezia is not defined
+      when: amnezia is not defined and not skip_wg
 
     - name: Install amnezia
       include_role:
@@ -27,5 +28,6 @@
 - hosts: main
   gather_facts: false
   roles:
-    - monitoring
-    - wg-main
+    # - monitoring
+    # - wg-main
+    - nginx_certbot
