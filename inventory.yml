@@ -4,8 +4,11 @@ external_endpoints:
 main:
   vars:
     ansible_user: root
+    site_domain: "wgb.hosts.name"
     local_net4: 10.42.0.0/16
     local_net6: fd:cafe:42::/96
+    wg_easy_ipv4_subnet: "{{ local_net4 }}"
+    wg_easy_ipv6_subnet: "{{ local_net6 }}"
   hosts:
     #main:
     #  ansible_host: 31.130.144.133

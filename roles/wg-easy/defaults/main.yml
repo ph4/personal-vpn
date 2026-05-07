@@ -1,0 +1,34 @@
+---
+site_domain: "wgb.hosts.name"
+site_www: false
+site_backend: "http://127.0.0.1:{{ wg_easy_host_port_tcp }}"
+site_trusted_proxies: []
+
+compose_dir: "/etc/docker/containers/wg-easy"
+
+wg_easy_image: "ghcr.io/wg-easy/wg-easy:15.3.0-beta.2"
+wg_easy_use_awg: false
+
+wg_easy_client_ipv4_cidr: "10.42.1.0/24"
+wg_easy_client_ipv6_cidr: "fd:cafe:42::1:0/112"
+
+# NOTE: if this overlaps with wg_easy_client_ipv4_cidr, Docker's
+# POSTROUTING MASQUERADE rule (-s <subnet> -j MASQUERADE) will SNAT
+# WireGuard client traffic leaving the host, which may be undesirable.
+wg_easy_ipv4_subnet: "10.42.0.0/24"
+wg_easy_ipv6_subnet: "fd:cafe:42::/64"
+wg_easy_ipv4: >-
+  {{ wg_easy_ipv4_subnet
+     | ansible.utils.ipaddr('net')
+     | ansible.utils.ipaddr('2')
+     | ansible.utils.ipaddr('address') }}
+wg_easy_ipv6: >-
+  {{ wg_easy_ipv6_subnet
+     | ansible.utils.ipaddr('net')
+     | ansible.utils.ipaddr('2')
+     | ansible.utils.ipaddr('address') }}
+
+wg_easy_container_port_udp: "51820"
+wg_easy_host_port_udp: "{{ wg_easy_container_port_udp }}"
+wg_easy_container_port_tcp: "51821"
+wg_easy_host_port_tcp: "{{ wg_easy_container_port_tcp }}"

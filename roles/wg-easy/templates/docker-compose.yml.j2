@@ -1,0 +1,48 @@
+volumes:
+  etc_wireguard:
+
+services:
+  wg-easy:
+    image: {{ wg_easy_image }}
+    container_name: wg-easy
+    environment:
+      - INSECURE=true
+      - EXPERIMENTAL_AWG={{ wg_easy_use_awg | lower }}
+      - INIT_IPV4_CIDR={{ wg_easy_client_ipv4_cidr }}
+      - INIT_IPV6_CIDR={{ wg_easy_client_ipv6_cidr }}
+    networks:
+      wg:
+        ipv4_address: {{ wg_easy_ipv4 }}
+        ipv6_address: {{ wg_easy_ipv6 }}
+    volumes:
+      - etc_wireguard:/etc/wireguard
+      - /lib/modules:/lib/modules:ro
+    ports:
+      - "{{ wg_easy_host_port_udp }}:{{ wg_easy_container_port_udp }}/udp"
+      - "{{ wg_easy_host_port_tcp }}:{{ wg_easy_container_port_tcp }}/tcp"
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    sysctls:
+      - net.ipv4.ip_forward=1
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv6.conf.all.disable_ipv6=0
+      - net.ipv6.conf.all.forwarding=1
+      - net.ipv6.conf.default.forwarding=1
+    healthcheck:
+      test: ["CMD-SHELL", "{{ 'awg' if wg_easy_use_awg else 'wg' }} show | grep -q interface || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  wg:
+    driver: bridge
+    enable_ipv6: true
+    ipam:
+      driver: default
+      config:
+        - subnet: {{ wg_easy_ipv4_subnet }}
+        - subnet: {{ wg_easy_ipv6_subnet }}

@@ -1,0 +1,30 @@
+---
+- name: Install dnf-plugins-core
+  ansible.builtin.dnf:
+    name: dnf-plugins-core
+    state: present
+  become: true
+
+- name: Add Docker CE repository
+  ansible.builtin.command:
+    cmd: dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+    creates: /etc/yum.repos.d/docker-ce.repo
+  become: true
+
+- name: Install Docker
+  ansible.builtin.dnf:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+  become: true
+
+- name: Ensure Docker is started and enabled
+  ansible.builtin.systemd:
+    name: docker
+    state: started
+    enabled: true
+  become: true

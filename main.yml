@@ -31,3 +31,5 @@
     # - monitoring
     # - wg-main
     - nginx_certbot
+    - docker
+    - wg-easy
