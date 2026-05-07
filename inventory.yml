@@ -9,6 +9,8 @@ main:
     local_net6: fd:cafe:42::/96
     wg_easy_ipv4_subnet: "{{ local_net4 }}"
     wg_easy_ipv6_subnet: "{{ local_net6 }}"
+    wg_easy_ipv4: "10.42.0.2"
+    wg_easy_ipv6: "fd:cafe:42::2"
   hosts:
     #main:
     #  ansible_host: 31.130.144.133
