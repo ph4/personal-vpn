@@ -13,6 +13,9 @@
   become: true
   notify: reload nginx
 
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
 - name: Obtain certificate for {{ site_domain }}
   ansible.builtin.command: >
     certbot certonly --webroot
