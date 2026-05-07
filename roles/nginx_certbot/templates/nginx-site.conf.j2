@@ -9,7 +9,8 @@ server {
     listen 80;
     server_name {{ server_names | join(' ') }};
 
-    location /.well-known/acme-challenge/ {
+    location ^~ /.well-known/acme-challenge/ {
+        default_type "text/plain";
         root /var/www/letsencrypt;
     }
 

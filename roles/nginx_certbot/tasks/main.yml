@@ -24,6 +24,14 @@
     mode: '0755'
   become: true
 
+- name: Deploy global ACME challenge handler
+  ansible.builtin.template:
+    src: acme.conf.j2
+    dest: /etc/nginx/conf.d/acme.conf
+    mode: '0644'
+  become: true
+  notify: reload nginx
+
 - name: Ensure renewal hooks directory exists
   ansible.builtin.file:
     path: /etc/letsencrypt/renewal-hooks/deploy

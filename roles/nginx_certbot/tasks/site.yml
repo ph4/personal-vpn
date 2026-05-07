@@ -5,17 +5,6 @@
   register: cert_stat
   become: true
 
-- name: Deploy Nginx config for {{ site_domain }}
-  ansible.builtin.template:
-    src: nginx-site.conf.j2
-    dest: "/etc/nginx/conf.d/{{ site_domain }}.conf"
-    mode: '0644'
-  become: true
-  notify: reload nginx
-
-- name: Flush handlers
-  ansible.builtin.meta: flush_handlers
-
 - name: Obtain certificate for {{ site_domain }}
   ansible.builtin.command: >
     certbot certonly --webroot
@@ -27,4 +16,12 @@
   become: true
   when: not cert_stat.stat.exists
   changed_when: true
+  notify: reload nginx
+
+- name: Deploy Nginx config for {{ site_domain }}
+  ansible.builtin.template:
+    src: nginx-site.conf.j2
+    dest: "/etc/nginx/conf.d/{{ site_domain }}.conf"
+    mode: '0644'
+  become: true
   notify: reload nginx
