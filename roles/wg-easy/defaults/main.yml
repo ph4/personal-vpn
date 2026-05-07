@@ -2,7 +2,6 @@
 site_domain: "wgb.hosts.name"
 site_www: false
 site_backend: "http://127.0.0.1:{{ wg_easy_host_port_tcp }}"
-site_trusted_proxies: []
 
 compose_dir: "/etc/docker/containers/wg-easy"
 

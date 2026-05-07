@@ -47,4 +47,6 @@ Container IPs `wg_easy_ipv4` and `wg_easy_ipv6` are derived from the subnet vars
 
 - `INSECURE=true` is set, exposing the admin UI without auth. Access control relies on nginx or upstream configuration.
 
+- `site_trusted_proxies` is deliberately left unset, so the nginx template's inner default of `['127.0.0.1']` applies. This gives nginx a `set_real_ip_from 127.0.0.1` directive, resolving the real client IP from `X-Forwarded-For`.
+
 - If `wg_easy_ipv4_subnet` overlaps with `wg_easy_client_ipv4_cidr`, Docker's POSTROUTING MASQUERADE rule (`-s <subnet> -j MASQUERADE`) will SNAT WireGuard client traffic leaving the host. Route the client subnet appropriately or keep the subnets disjoint.

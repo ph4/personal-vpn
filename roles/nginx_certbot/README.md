@@ -55,7 +55,7 @@ site_trusted_proxies: []   # optional
 | `site_www` | no | Also request cert for `www.<domain>` |
 | `site_root` | no | Document root for static sites (default: `/var/www/html`) |
 | `site_backend` | no | Proxy pass target (empty = serve static files) |
-| `site_trusted_proxies` | no | List of trusted proxy IPs for real IP |
+| `site_trusted_proxies` | no | List of trusted proxy IPs for `set_real_ip_from`. Defaults to `['127.0.0.1']` in the template if unset. Set to `[]` to disable real IP resolution entirely. |
 
 ## Renewal
 
