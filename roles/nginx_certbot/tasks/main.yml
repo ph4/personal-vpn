@@ -15,6 +15,17 @@
     enabled: true
   become: true
 
+- name: Open HTTP and HTTPS in firewalld
+  ansible.posix.firewalld:
+    service: "{{ item }}"
+    permanent: true
+    state: enabled
+    immediate: true
+  loop:
+    - http
+    - https
+  become: true
+
 - name: Create LE directory
   ansible.builtin.file:
     path: /var/www/letsencrypt

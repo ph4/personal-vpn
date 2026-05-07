@@ -5,6 +5,17 @@
   register: cert_stat
   become: true
 
+- name: Remove stale site config before obtaining cert
+  ansible.builtin.file:
+    path: "/etc/nginx/conf.d/{{ site_domain }}.conf"
+    state: absent
+  become: true
+  notify: reload nginx
+  when: not cert_stat.stat.exists
+
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
+
 - name: Obtain certificate for {{ site_domain }}
   ansible.builtin.command: >
     certbot certonly --webroot
