@@ -1,0 +1,3 @@
+---
+nginx_dir: "/etc/nginx/default.d"
+compose_dir: "/etc/docker/containers/monitoring"

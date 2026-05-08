@@ -1,13 +1,4 @@
 ---
-- name: Set variables
-  set_fact:
-    tools_repo: https://github.com/amnezia-vpn/amneziawg-tools.git
-    tools_path: /opt/amneziawg-tools
-    module_repo: https://github.com/ph4/amneziawg-linux-kernel-module.git
-    module_path: /opt/amneziawg-linux-kernel-module
-    module_name: amneziawg
-    module_version: 1.0.0
-
 - name: Ensure development tools are installed
   dnf:
     name:

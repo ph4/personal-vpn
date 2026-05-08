@@ -1,8 +1,6 @@
 ---
 - name: Set variables
   set_fact:
-    nginx_dir: "{{ '/etc/nginx/default.d' }}"
-    compose_dir: "{{ '/etc/docker/containers/monitoring' }}"
     external_endpoints: "{{ groups['external_endpoints'] | map('extract', hostvars) | list }}"
     host_endpoints: "{{ groups['endpoint'] | map('extract', hostvars) | list }}"
 
