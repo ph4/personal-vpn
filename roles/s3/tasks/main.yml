@@ -1,8 +1,7 @@
 ---
 - name: Install s3cmd
-  package:
+  ansible.builtin.dnf:
     name: s3cmd
-    state: present
   become: true
 
 - name: Deploy s3cmd config

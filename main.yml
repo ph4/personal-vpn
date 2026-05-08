@@ -28,9 +28,9 @@
 - hosts: main_grp
   gather_facts: false
   roles:
-    - amneziawg
-    # - monitoring
+    # - amneziawg
+    - monitoring
     # - wg-main
-    # - nginx_certbot
-    # - docker
+    - nginx_certbot
+    - docker
     - wg-easy
