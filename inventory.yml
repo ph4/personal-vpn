@@ -5,7 +5,7 @@ all:
 external_endpoints:
   hosts:
 
-main-grp:
+main_grp:
   vars:
     ansible_user: root
     site_domain: "wgb.hosts.name"
@@ -15,6 +15,7 @@ main-grp:
     wg_easy_ipv6_subnet: "{{ local_net6 }}"
     wg_easy_ipv4: "10.42.0.2"
     wg_easy_ipv6: "fd:cafe:42::2"
+    wg_easy_use_awg: true
   hosts:
     secondary:
       ansible_host: 153.80.184.189
