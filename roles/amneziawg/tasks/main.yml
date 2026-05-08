@@ -32,11 +32,17 @@
     update: true
   register: git
 
+- name: Check if module is installed for current kernel
+  command: modprobe --dry-run {{ module_name }}
+  register: module_check
+  failed_when: false
+  changed_when: false
+
 - name: Build module with make
   command: make dkms-install
   args:
     chdir: "{{ module_path }}/src"
-  when: git.after != git.before
+  when: module_check.rc != 0 or git.before != git.after
   register: make
   changed_when: make.rc == 0
 
