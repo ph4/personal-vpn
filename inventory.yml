@@ -1,7 +1,11 @@
+all:
+  vars:
+    ansible_user: root
+
 external_endpoints:
   hosts:
 
-main:
+main-grp:
   vars:
     ansible_user: root
     site_domain: "wgb.hosts.name"
@@ -12,10 +16,13 @@ main:
     wg_easy_ipv4: "10.42.0.2"
     wg_easy_ipv6: "fd:cafe:42::2"
   hosts:
-    #main:
-    #  ansible_host: 31.130.144.133
     secondary:
       ansible_host: 153.80.184.189
+
+blah:
+  hosts:
+    main:
+     ansible_host: 31.130.144.133
 
 endpoint:
   vars:

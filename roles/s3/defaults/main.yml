@@ -1,0 +1,7 @@
+---
+s3_access_key: ""
+s3_secret_key: ""
+s3_host_base: "s3.amazonaws.com"
+s3_host_bucket: "%(bucket)s.s3.amazonaws.com"
+s3_region: "us-east-1"
+s3_use_https: true

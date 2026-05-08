@@ -1,0 +1,5 @@
+---
+- name: Download s3://{{ s3_bucket }}/{{ s3_object }} to {{ s3_dest }}
+  ansible.builtin.command: >
+    s3cmd get s3://{{ s3_bucket }}/{{ s3_object }} {{ s3_dest }}
+  changed_when: true

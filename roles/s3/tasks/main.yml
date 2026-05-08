@@ -1,0 +1,22 @@
+---
+- name: Install s3cmd
+  package:
+    name: s3cmd
+    state: present
+  become: true
+
+- name: Deploy s3cmd config
+  ansible.builtin.template:
+    src: s3cfg.j2
+    dest: /root/.s3cfg
+    owner: root
+    group: root
+    mode: "0600"
+  become: true
+
+- name: Validate S3 credentials
+  ansible.builtin.command: s3cmd ls
+  register: s3_check
+  changed_when: false
+  become: true
+  failed_when: s3_check.rc != 0

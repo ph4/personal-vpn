@@ -1,0 +1,12 @@
+- hosts: main
+  gather_facts: false
+  roles:
+    - s3
+  tasks:
+    - name: Upload wg-easy db
+      include_role:
+        name: s3
+        tasks_from: put
+      vars:
+        s3_bucket: "main-bucket"
+        s3_object: "/root/migrate/wg-easy-migrated.db"

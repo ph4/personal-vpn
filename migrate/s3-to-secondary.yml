@@ -1,0 +1,31 @@
+- hosts: secondary
+  gather_facts: false
+  roles:
+    - s3
+  vars:
+    compose_dir: "{{ '/etc/docker/containers/wg-easy' }}"
+  tasks:
+    - name: Get db from s3
+      include_role:
+        name: s3
+        tasks_from: get
+      vars:
+        s3_bucket: "main-bucket"
+        s3_object: "wg-easy.db"
+        s3_dest: "/root/wg-easy.db"
+
+    - name: Stop the compose
+      community.docker.docker_compose_v2:
+        project_src: "{{ compose_dir }}"
+        state: stopped
+        remove_orphans: true
+
+    - name: Put the db into the container
+      command: >
+        docker run --rm -v wg-easy_etc_wireguard:/data -v /root/wg-easy.db:/app/wg-easy.db alpine cp -f /app/wg-easy.db /data/wg-easy.db
+
+    - name: Start the compose
+      community.docker.docker_compose_v2:
+        project_src: "{{ compose_dir }}"
+        state: present
+
