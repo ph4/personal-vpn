@@ -9,4 +9,5 @@
         tasks_from: put
       vars:
         s3_bucket: "main-bucket"
-        s3_object: "/root/migrate/wg-easy-migrated.db"
+        s3_src: "/root/migration/wg-easy-migrated.db"
+        s3_object: "wg-easy.db"

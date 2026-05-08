@@ -1,5 +1,5 @@
 ---
-- name: Upload {{ s3_object }} to s3://{{ s3_bucket }}/{{ s3_key | default(s3_object | basename) }}
+- name: Upload {{ s3_src }} to s3://{{ s3_bucket }}/{{ s3_object | default(s3_src | basename) }}
   ansible.builtin.command: >
-    s3cmd put {{ s3_object }} s3://{{ s3_bucket }}/{{ s3_key | default(s3_object | basename) }}
+    s3cmd put {{ s3_src }} s3://{{ s3_bucket }}/{{ s3_object | default(s3_src | basename) }}
   changed_when: true
