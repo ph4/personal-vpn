@@ -5,11 +5,27 @@ services:
   wg-easy:
     image: {{ wg_easy_image }}
     container_name: wg-easy
+    # Hacky until upstream gets their act together
+    # https://github.com/wg-easy/wg-easy/issues/2542
+    # https://github.com/wg-easy/wg-easy/pull/2283
+    entrypoint: >-
+      /bin/sh -c "
+      update-alternatives --install /usr/sbin/iptables iptables /usr/sbin/iptables-nft 100 --slave /usr/sbin/iptables-restore iptables-restore /usr/sbin/iptables-nft-restore --slave /usr/sbin/iptables-save iptables-save /usr/sbin/iptables-nft-save &&
+      update-alternatives --install /usr/sbin/ip6tables ip6tables /usr/sbin/ip6tables-nft 100 --slave /usr/sbin/ip6tables-restore ip6tables-restore /usr/sbin/ip6tables-nft-restore --slave /usr/sbin/ip6tables-save ip6tables-save /usr/sbin/ip6tables-nft-save &&
+      exec /usr/bin/dumb-init node server/index.mjs
+      "
     environment:
       - INSECURE=true
-      - EXPERIMENTAL_AWG={{ wg_easy_use_awg | lower }}
+      - INIT_ENABLED=true
+      - INIT_USERNAME={{ wg_easy_username }}
+      - INIT_PASSWORD={{ wg_easy_password }}
+      - INIT_HOST={{ site_domain }}
+      - INIT_PORT={{ wg_easy_container_port_udp }}
+      - INIT_DNS={{ wg_easy_dns }}
       - INIT_IPV4_CIDR={{ wg_easy_client_ipv4_cidr }}
       - INIT_IPV6_CIDR={{ wg_easy_client_ipv6_cidr }}
+      - INIT_ALLOWED_IPS={{ wg_easy_allowed_ips }}
+      - EXPERIMENTAL_AWG={{ wg_easy_use_awg | lower }}
     networks:
       wg:
         ipv4_address: {{ wg_easy_ipv4 }}

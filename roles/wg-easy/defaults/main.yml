@@ -11,6 +11,9 @@ wg_easy_use_awg: false
 wg_easy_client_ipv4_cidr: "10.42.1.0/24"
 wg_easy_client_ipv6_cidr: "fd:cafe:42::1:0/112"
 
+wg_easy_dns: "1.1.1.1, 2606:4700:4700::1111"
+wg_easy_allowed_ips: "0.0.0.0/0, ::/0"
+
 # NOTE: if this overlaps with wg_easy_client_ipv4_cidr, Docker's
 # POSTROUTING MASQUERADE rule (-s <subnet> -j MASQUERADE) will SNAT
 # WireGuard client traffic leaving the host, which may be undesirable.
