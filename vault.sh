@@ -4,7 +4,7 @@ set -euo pipefail
 ENCRYTPED_PATTERN="^\$ANSIBLE_VAULT"
 VAULT_NAME="defualt"
 FILE_SUFFIX="vault.yml"
-PASSWORD_CHECK_FILE="host_vars/password_check"
+PASSWORD_CHECK_FILE=".vault_check"
 VAULT_PASS_FILE=".vault_password"
 
 is_encrypted() {
