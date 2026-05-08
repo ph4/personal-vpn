@@ -29,7 +29,7 @@
   gather_facts: false
   roles:
     # - amneziawg
-    - monitoring
+    # - monitoring
     # - wg-main
     - nginx_certbot
     - docker
