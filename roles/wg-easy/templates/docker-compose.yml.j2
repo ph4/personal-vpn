@@ -26,6 +26,7 @@ services:
       - INIT_IPV6_CIDR={{ wg_easy_client_ipv6_cidr }}
       - INIT_ALLOWED_IPS={{ wg_easy_allowed_ips }}
       - EXPERIMENTAL_AWG={{ wg_easy_use_awg | lower }}
+      - OVERRIDE_AUTO_AWG=awg
     networks:
       wg:
         ipv4_address: {{ wg_easy_ipv4 }}
@@ -54,6 +55,19 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+
+  route-clients:
+    image: alpine
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+    command: >
+      sh -c "
+      ip route replace {{ wg_easy_client_ipv4_cidr }} via {{ wg_easy_ipv4 }} &&
+      ip route replace {{ wg_easy_client_ipv6_cidr }} via {{ wg_easy_ipv6 }}
+      "
+    restart: "no"
+    pull_policy: missing
 
 networks:
   wg:
