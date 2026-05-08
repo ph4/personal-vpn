@@ -12,12 +12,20 @@
   failed_when: awg_check.rc != 0
   changed_when: false
   become: true
-  when: wg_easy_use_awg | default(false)
+  when: false # wg_easy_use_awg | default(false)
 
 - name: Setup nginx for wg-easy
   include_role:
     name: nginx_certbot
     tasks_from: site.yml
+
+- name: Open WireGuard port in firewalld
+  ansible.posix.firewalld:
+    port: "{{ wg_easy_host_port_udp }}/udp"
+    permanent: true
+    state: enabled
+    immediate: true
+  become: true
 
 - name: Create compose directory
   ansible.builtin.file:
